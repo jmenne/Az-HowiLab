@@ -1,0 +1,438 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "configName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the deployment, i.e. BaseConfig01. Do not use spaces or special characters other than _ or -. Used to concatenate resource names for the deployment."
+      },
+      "defaultValue": "HowiLab-01"
+    },
+    "domainName": {
+      "type": "string",
+      "metadata": {
+        "description": "The FQDN of the new AD domain. For this TLG, use testlab.<your public domain>."
+      },
+      "defaultValue": "corp.howilab.local"
+    },
+    "serverOS": {
+      "type": "string",
+      "allowedValues": [
+        "Windows Server 2019", "Windows Server 2016"
+      ],
+      "metadata": {
+        "description": "The OS of application servers in your deployment."
+      },
+      "defaultValue": "Windows Server 2019"
+    },
+    "clientOS": {
+      "type": "string",
+      "allowedValues": [
+        "Windows Server 2019", "Windows 10"
+      ],
+      "metadata": {
+        "description": "The OS of client VMs in your deployment. You can choose Windows 10 ONLY if your Azure subscription supports Windows 10 gallery images."
+      },
+      "defaultValue": "Windows 10"
+    },
+    "adminUsername": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the domain administrator account to create, i.e. globaladmin. This will also be used to create a local admin account on each VMs."
+      }
+    },
+    "adminPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "The administrator account password."
+      }
+    },
+    "vmSize": {
+      "type": "string",
+      "metadata": {
+        "description": "Select a VM size for all VMs in your deployment."
+      },
+      "defaultValue": "Standard_D2s_v3"
+    },
+    "dnsLabelPrefix": {
+      "type": "string",
+      "metadata": {
+        "description": "DNS label prefix for public IPs. Must be lowercase and match the regular expression: ^[a-z][a-z0-9-]{1,61}[a-z0-9]$."
+      }
+    },
+    "_artifactsLocation": {
+      "type": "string",
+      "metadata": {
+        "description": "GitHub location of template files."
+      },
+      "defaultValue": "https://raw.githubusercontent.com/jmenne/Az-Howilab/master"
+    }
+  },
+
+  "variables": {
+
+    "shortDomainName": "[first(split(parameters('domainName'),'.'))]",
+    "domainUserName": "[concat(variables('shortDomainName'),'\\',parameters('adminUsername'))]",
+    "assetLocation": "[concat(parameters('_artifactsLocation'),'/DSC')]",
+    "templates": "[concat(parameters('_artifactsLocation'),'/nested')]",
+    
+    "network": {
+      "vnetName": "[concat(parameters('configName'),'-VNET')]",
+      "subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets', concat(parameters('configName'),'-VNET'), 'subnet-01')]",
+      "prefix": "10.0.0.0/16",
+      "subnet": "10.0.0.0/24",
+      "nsgName": "[concat(parameters('configName'),'-NSG')]"
+    },
+
+    "VMs": {
+      "adVmName": "DC01",
+      "adConfigurationFunction": {
+        "CreateADPDC": "CreateADPDC.ps1\\CreateADPDC"
+      },
+      "adNicIP": "10.0.0.10",
+      "adPublicIpName": "[concat(parameters('configName'),'-AD_IP')]",
+
+      "appVmName": "APP01",
+      "appConfigurationFunction": {
+        "AppConfig": "AppConfig.ps1\\AppConfig"
+      },
+      "appNicIP": "10.0.0.21",
+      "appPublicIpName": "[concat(parameters('configName'),'-APP_IP')]",
+
+      "cliVmName": "CLIENT1",
+      "clientNicIP": "10.0.0.50",
+      "cliPublicIpName": "[concat(parameters('configName'),'-CLI_IP')]",
+
+      "clientOS": "[if(equals(parameters('clientOS'),'Windows Server 2019'),'2019-Datacenter','20h2-pro')]",
+      "serverOS": "[if(equals(parameters('serverOS'),'Windows Server 2019'),'2019-Datacenter','2016-Datacenter')]"
+    },
+
+    "SharedVmConfig": {
+      "location": "[resourceGroup().location]",
+      "vmSize": "[parameters('vmSize')]",
+      "clientOS": "[variables('VMs').clientOS]",
+      "serverOS": "[variables('VMs').serverOS]",
+      "domainUsername": "[variables('domainUsername')]",
+      "adminUsername": "[parameters('adminUsername')]",
+      "adminPassword": "[parameters('adminPassword')]",
+      "domainName": "[parameters('domainName')]"
+    }
+  },
+
+  "resources": [
+    {
+      "apiVersion": "2018-01-01",
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "name": "[variables('network').nsgName]",
+      "location": "[resourceGroup().location]",
+      "tags": {
+        "displayName": "NSG - Front End"
+      },
+      "comments": "This network security group enables RDP on port 3389.",
+      "properties": {
+        "securityRules": [
+          {
+            "name": "rdp-rule",
+            "properties": {
+              "description": "Allow RDP",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "3389",
+              "sourceAddressPrefix": "Internet",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 100,
+              "direction": "Inbound"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "[variables('network').vnetName]",
+      "type": "Microsoft.Network/virtualNetworks",
+      "dependsOn": [
+        "[concat('Microsoft.Network/networkSecurityGroups/',variables('network').nsgName)]"
+      ],
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2018-01-01",
+      "comments": "This is the virtual network for the deployment.",
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[variables('network').prefix]"
+          ]
+        },
+        "dhcpOptions": {
+          "dnsServers": "[variables('VMs').adNicIP]"
+        },
+        "subnets": [
+          {
+            "name": "subnet-01",
+            "properties": {
+              "addressPrefix": "[variables('network').subnet]",
+              "networkSecurityGroup": {
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups',variables('network').nsgName)]"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "2019-11-01",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "name": "[variables('VMs').adPublicIpName]",
+      "location": "[resourceGroup().location]",
+      "comments": "This is the public IP address for the ADDC VM.",
+      "properties": {
+        "publicIPAllocationMethod": "Static",
+        "dnsSettings": {
+          "domainNameLabel": "[toLower(concat(parameters('dnsLabelPrefix'),'ad'))]"
+        }
+      }
+    },
+    {
+      "apiVersion": "2019-11-01",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "name": "[variables('VMs').appPublicIpName]",
+      "location": "[resourceGroup().location]",
+      "comments": "This is the public IP address for the app server VM.",
+      "properties": {
+        "publicIPAllocationMethod": "Static",
+        "dnsSettings": {
+          "domainNameLabel": "[toLower(concat(parameters('dnsLabelPrefix'),'app'))]"
+        }
+      }
+    },
+    {
+      "apiVersion": "2019-11-01",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "name": "[variables('VMs').cliPublicIpName]",
+      "location": "[resourceGroup().location]",
+      "comments": "This is the public IP address for the client VM.",
+      "properties": {
+        "publicIPAllocationMethod": "Static",
+        "dnsSettings": {
+          "domainNameLabel": "[toLower(concat(parameters('dnsLabelPrefix'),'cli'))]"
+        }
+      }
+    },
+    {
+      "name": "[concat(parameters('configName'),'-AD_NIC')]",
+      "type": "Microsoft.Network/networkInterfaces",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[concat('Microsoft.Network/virtualNetworks/',parameters('configName'),'-vnet')]"
+      ],
+      "apiVersion": "2018-01-01",
+      "comments": "This is the network interface for the ADDC VM.",
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAllocationMethod": "Static",
+              "privateIPAddress": "[variables('VMs').adNicIP]",
+              "publicIPAddress": {
+                "id": "[resourceId ('Microsoft.Network/publicIPAddresses/',variables('VMs').adPublicIpName)]"
+              },
+              "subnet": {
+                "id": "[variables('network').subnetRef]"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "[concat(parameters('configName'),'-APP_NIC')]",
+      "type": "Microsoft.Network/networkInterfaces",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[concat('Microsoft.Network/virtualNetworks/',parameters('configName'),'-vnet')]"
+      ],
+      "apiVersion": "2018-01-01",
+      "comments": "This is the network interface for the app server VM.",
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAllocationMethod": "Static",
+              "privateIPAddress": "[variables('VMs').appNicIP]",
+              "publicIPAddress": {
+                "id": "[resourceId ('Microsoft.Network/publicIPAddresses/',variables('VMs').appPublicIpName)]"
+              },
+              "subnet": {
+                "id": "[variables('network').subnetRef]"
+              }
+            }
+          }
+        ],
+        "dnsSettings": {
+          "dnsServers": [
+            "[variables('VMs').adNicIP]"
+          ],
+          "internalDomainNameSuffix": "[parameters('domainName')]"
+        }
+      }
+    },
+    {
+      "name": "[concat(parameters('configName'),'-CLI_NIC')]",
+      "type": "Microsoft.Network/networkInterfaces",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[concat('Microsoft.Network/virtualNetworks/',parameters('configName'),'-vnet')]"
+      ],
+      "apiVersion": "2018-01-01",
+      "comments": "This is the network interface for the client VM.",
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAllocationMethod": "Static",
+              "privateIPAddress": "[variables('VMs').clientNicIP]",
+              "publicIPAddress": {
+                "id": "[resourceId ('Microsoft.Network/publicIPAddresses/',variables('VMs').cliPublicIpName)]"
+              },
+              "subnet": {
+                "id": "[variables('network').subnetRef]"
+              }
+            }
+          }
+        ],
+        "dnsSettings": {
+          "dnsServers": [
+            "[variables('VMs').adNicIP]"
+          ],
+          "internalDomainNameSuffix": "[parameters('domainName')]"
+        }
+      }
+    },
+    {
+      "name": "ADDC",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2015-01-01",
+      "comments": "This is the deployment resource for the ADDC VM.",
+      "dependsOn": [
+        "[concat('Microsoft.Network/networkInterfaces/',parameters('configName'),'-AD_NIC')]"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('templates'),'/addc.json')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "SharedVmConfig": { 
+            "value": "[variables('SharedVmConfig')]" 
+          },
+          "vmName": {
+            "value": "[variables('VMs').adVmName]"
+          },
+          "nicName": {
+            "value": "[concat(parameters('configName'),'-AD_NIC')]"
+          },
+          "modulesURL": {
+            "value": "[variables('assetLocation')]"
+          },
+          "configurationFunction": {
+            "value": "[variables('VMs').adConfigurationFunction]"
+          }
+        }
+      }
+    },
+    {
+      "name": "AppServer",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2015-01-01",
+      "comments": "This is the deployment resource for the app server VM.",
+      "dependsOn": [
+        "[concat('Microsoft.Network/networkInterfaces/',parameters('configName'),'-APP_NIC')]",
+        "[concat('Microsoft.Resources/deployments/','ADDC')]"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('templates'),'/app.json')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "SharedVmConfig": { 
+            "value": "[variables('SharedVmConfig')]" 
+          },
+          "vmName": {
+            "value": "[variables('VMs').appVmName]"
+          },
+          "nicName": {
+            "value": "[concat(parameters('configName'),'-APP_NIC')]"
+          },
+          "modulesURL": {
+            "value": "[variables('assetLocation')]"
+          },
+          "configurationFunction": {
+            "value": "[variables('VMs').appConfigurationFunction]"
+          }
+        }
+      }
+    },
+    {
+      "name": "Client",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2015-01-01",
+      "comments": "This is the deployment resource for the client VM.",
+      "dependsOn": [
+        "[concat('Microsoft.Network/networkInterfaces/',parameters('configName'),'-CLI_NIC')]",
+        "[concat('Microsoft.Resources/deployments/','ADDC')]"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('templates'),'/client.json')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "SharedVmConfig": { 
+            "value": "[variables('SharedVmConfig')]" 
+          },
+          "vmName": {
+            "value": "[variables('VMs').cliVmName]"
+          },
+          "nicName": {
+            "value": "[concat(parameters('configName'),'-CLI_NIC')]"
+          }
+        }
+      }
+    }
+  ],
+
+  "outputs": {
+    "DcPublicIpAddress": {
+      "type": "string",
+      "value": "[reference(variables('VMs').adPublicIpName).ipAddress]"
+    },
+    "DcFqdn": {
+      "type": "string",
+      "value": "[reference(variables('VMs').adPublicIpName).dnsSettings.fqdn]"
+    },
+    "AppPublicIpAddress": {
+      "type": "string",
+      "value": "[reference(variables('VMs').appPublicIpName).ipAddress]"
+    },
+    "AppFqdn": {
+      "type": "string",
+      "value": "[reference(variables('VMs').appPublicIpName).dnsSettings.fqdn]"
+    },
+    "ClientPublicIpAddress": {
+      "type": "string",
+      "value": "[reference(variables('VMs').cliPublicIpName).ipAddress]"
+    },
+    "ClientFqdn": {
+      "type": "string",
+      "value": "[reference(variables('VMs').cliPublicIpName).dnsSettings.fqdn]"
+    }
+  }
+}

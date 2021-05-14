@@ -1,0 +1,35 @@
+#---------------------------------#
+#      environment configuration  #
+#---------------------------------#
+version: 2.16.{build}.0
+install:
+    - git clone https://github.com/PowerShell/DscResource.Tests
+    - ps: |
+        Add-WindowsFeature RSAT-AD-PowerShell
+        Import-Module -Name "$env:APPVEYOR_BUILD_FOLDER\DscResource.Tests\AppVeyor.psm1"
+        Invoke-AppveyorInstallTask
+
+#---------------------------------#
+#      build configuration        #
+#---------------------------------#
+
+build: false
+
+#---------------------------------#
+#      test configuration         #
+#---------------------------------#
+
+test_script:
+    - ps: |
+        Invoke-AppveyorTestScriptTask `
+            -CodeCoverage `
+            -CodeCovIo
+
+#---------------------------------#
+#      deployment configuration   #
+#---------------------------------#
+
+# scripts to run before deployment
+deploy_script:
+  - ps: |
+      Invoke-AppveyorAfterTestTask

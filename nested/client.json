@@ -1,0 +1,115 @@
+﻿{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "SharedVmConfig": {
+      "type": "object"
+    },
+    "vmName": {
+      "type": "string"
+    },
+    "nicName": {
+      "type": "string"
+    }
+  },
+  "variables": {
+    "firstExtensionSuffix": "/JoinDomain",
+    "firstExtensionName": "[concat(parameters('vmName'),variables('firstExtensionSuffix'))]"
+  },
+  "resources": [
+    {
+      "apiVersion": "2017-03-30",
+      "type": "Microsoft.Compute/virtualMachines",
+      "name": "[parameters('vmName')]",
+      "location": "[parameters('SharedVmConfig').location]",
+      "dependsOn": [],
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "[parameters('SharedVmConfig').vmSize]"
+        },
+        "osProfile": {
+          "computerName": "[parameters('vmName')]",
+          "adminUsername": "[parameters('SharedVmConfig').adminUsername]",
+          "adminPassword": "[parameters('SharedVmConfig').adminPassword]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "[if(equals(parameters('SharedVmConfig').clientOS,'2019-Datacenter'),'MicrosoftWindowsServer','MicrosoftWindowsDesktop')]",
+            "offer": "[if(equals(parameters('SharedVmConfig').clientOS,'2019-Datacenter'),'WindowsServer','Windows-10')]",
+            "sku": "[parameters('SharedVmConfig').clientOS]",
+            "version": "latest"
+          },
+          "osDisk": {
+            "createOption": "FromImage"
+          },
+          "dataDisks": [
+            {
+              "createOption": "Empty",
+              "diskSizeGB": 1023,
+              "lun": 0,
+              "managedDisk": {
+                "storageAccountType": "Standard_LRS"
+              }
+            }
+          ]
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',parameters('nicName'))]"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "apiVersion": "2017-03-30",
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "name": "[variables('firstExtensionName')]",
+      "location": "[parameters('SharedVmConfig').location]",
+      "tags": {
+        "displayName": "Join Domain"
+      },
+      "properties": {
+        "publisher": "Microsoft.Compute",
+        "type": "JsonADDomainExtension",
+        "typeHandlerVersion": "1.3",
+        "autoUpgradeMinorVersion": true,
+        "settings": {
+          "Name": "[parameters('SharedVmConfig').domainName]",
+          "OUPath": null,
+          "Options": "3",
+          "Restart": "true",
+          "User": "[parameters('SharedVmConfig').domainUserName]"
+        },
+        "protectedsettings": {
+          "Password": "[parameters('SharedVmConfig').adminPassword]"
+        }
+      },
+      "dependsOn": [
+        "[parameters('vmName')]"
+      ]
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "name": "[concat(parameters('vmName'),'/BGInfo')]",
+      "apiVersion": "2017-03-30",
+      "scale": null,
+      "location": "[parameters('SharedVmConfig').location]",
+      "dependsOn": [
+        "[parameters('vmName')]",
+        "[concat('Microsoft.Compute/virtualMachines/',parameters('vmName'),'/extensions/JoinDomain')]"
+      ],
+      "properties": {
+        "publisher": "Microsoft.Compute",
+        "type": "BGInfo",
+        "typeHandlerVersion": "2.1",
+        "autoUpgradeMinorVersion": true,
+        "settings": {
+          "properties": []
+        }
+      }
+    }
+  ],
+  "outputs": {}
+}
