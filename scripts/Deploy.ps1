@@ -10,7 +10,7 @@ $adminUserName = "student" # The name of the domain administrator account to cre
 $adminPassword = "Pa55w.rd1234" # The administrator account password.
 $vmSize = "Standard_D2s_v3" # Select a VM size for all server VMs in your deployment.
 $dnsLabelPrefix = "howilab" # DNS label prefix for public IPs. Must be lowercase and match the regular expression: ^[a-z][a-z0-9-]{1,61}[a-z0-9]$.
-$_artifactsLocation = "https://raw.githubusercontent.com/jmenne/AZ-Howilab/master" # Location of template artifacts.
+$_artifactsLocation = "https://raw.githubusercontent.com/jmenne/AZ-Howilab/main" # Location of template artifacts.
 $templateUri = "$_artifactsLocation/azuredeploy.json"
 
 # Add parameters to array
