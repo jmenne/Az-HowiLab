@@ -86,7 +86,7 @@
           }
         },
         "settings": {
-          "modulesUrl": "[concat(parameters('modulesURL'),'/CreateADPDC.ps1.zip')]",
+          "modulesUrl": "[concat(parameters('modulesURL'),'/CreateHowiADPDC.ps1.zip')]",
           "wmfVersion": "latest",
           "configurationFunction": "[parameters('configurationFunction').CreateADPDC]",
           "Properties": {
