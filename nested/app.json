@@ -82,7 +82,7 @@
         "autoUpgradeMinorVersion": true,
         "settings": {
           "Name": "[parameters('SharedVmConfig').domainName]",
-          "OUPath": null,
+          "OUPath": "OU=Servers,OU=HowiLab,dc=corp,dc=howilab,dc=local",
           "Options": "3",
           "Restart": "true",
           "User": "[parameters('SharedVmConfig').domainUserName]"

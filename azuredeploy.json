@@ -104,8 +104,8 @@
       "clientNicIP": "10.0.0.50",
       "cliPublicIpName": "[concat(parameters('configName'),'-CLI_IP')]",
 
-      "clientOS": "[if(equals(parameters('clientOS'),'Windows Server 2019'),'2019-Datacenter','20h2-pro')]",
-      "serverOS": "[if(equals(parameters('serverOS'),'Windows Server 2019'),'2019-Datacenter','2016-Datacenter')]"
+      "clientOS": "[if(equals(parameters('clientOS'),'Windows Server 2019'),'2019-Datacenter-smalldisk','20h2-pro')]",
+      "serverOS": "[if(equals(parameters('serverOS'),'Windows Server 2019'),'2019-Datacenter-smalldisk','2016-Datacenter-smalldisk')]"
     },
 
     "SharedVmConfig": {
