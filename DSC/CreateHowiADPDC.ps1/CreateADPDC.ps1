@@ -242,6 +242,9 @@ configuration CreateADPDC
                     SurName = "Bolika"
                     Displayname = "Anna Bolika"
                     UserPrincipalName = "Anna@corp.howilab.local"
+                    Company = "HowiLab"
+                    Department = "Forschung"
+                    Jobtitle ="Leitung"
                     Password = $DomainCreds
                     Ensure = "Present"
                     DependsOn = "[xADOrganizationalUnit]UsersOU"
@@ -259,6 +262,9 @@ configuration CreateADPDC
                     SurName = "Bogen"
                     Displayname = "Ellen Bogen"
                     UserPrincipalName = "Ellen@corp.howilab.local"
+                    Company = "HowiLab"
+                    Department = "IT"
+                    Jobtitle = "Leitung"
                     Password = $DomainCreds
                     Ensure = "Present"
                     DependsOn = "[xADOrganizationalUnit]UsersOU"
@@ -276,6 +282,9 @@ configuration CreateADPDC
                     SurName = "Ragentor"
                     Displayname = "Ansgar Ragentor"
                     UserPrincipalName = "Ansgar@corp.howilab.local"
+                    Company = "HowiLab"
+                    Department = "Forschung"
+                    Jobtitle = "Mitarbeiter"
                     Password = $DomainCreds
                     Ensure = "Present"
                     DependsOn = "[xADOrganizationalUnit]UsersOU"
@@ -293,6 +302,9 @@ configuration CreateADPDC
                     SurName = "Nichtanders"
                     Displayname = "Erkan Nichtanders"
                     UserPrincipalName = "Erkan@corp.howilab.local"
+                    Company = "HowiLab"
+                    Department = "IT"
+                    Jobtitle = "Mitarbeiter"
                     Password = $DomainCreds
                     Ensure = "Present"
                     DependsOn = "[xADOrganizationalUnit]UsersOU"
@@ -310,6 +322,9 @@ configuration CreateADPDC
                     SurName = "Utzer"
                     Displayname = "Ben Utzer"
                     UserPrincipalName = "Ben@corp.howilab.local"
+                    Company = "HowiLab"
+                    Department = "HelpDesk"
+                    Jobtitle = "Mitarbeiter"
                     Password = $DomainCreds
                     Ensure = "Present"
                     DependsOn = "[xADOrganizationalUnit]UsersOU"
@@ -327,6 +342,9 @@ configuration CreateADPDC
                     SurName = "Reden"
                     Displayname = "Lasse Reden"
                     UserPrincipalName = "Lasse@corp.howilab.local"
+                    Company = "HowiLab"
+                    Department = "HelpDesk"
+                    Jobtitle = "Leitung"
                     Password = $DomainCreds
                     Ensure = "Present"
                     DependsOn = "[xADOrganizationalUnit]UsersOU"
@@ -344,6 +362,9 @@ configuration CreateADPDC
                     SurName = "Reden"
                     Displayname = "Claudia Manten"
                     UserPrincipalName = "Claudia@corp.howilab.local"
+                    Company = "HowiLab"
+                    Department = "Vertrieb"
+                    Jobtitle = "Leitung"
                     Password = $DomainCreds
                     Ensure = "Present"
                     DependsOn = "[xADOrganizationalUnit]UsersOU"
@@ -361,6 +382,9 @@ configuration CreateADPDC
                     SurName = "Retisch"
                     Displayname = "Theo Retisch"
                     UserPrincipalName = "Theo@corp.howilab.local"
+                    Company = "HowiLab"
+                    Department = "Vertrieb"
+                    Jobtitle = "Mitarbeiter"
                     Password = $DomainCreds
                     Ensure = "Present"
                     DependsOn = "[xADOrganizationalUnit]UsersOU"
@@ -378,6 +402,9 @@ configuration CreateADPDC
                     SurName = "Was"
                     Displayname = "Ed Was"
                     UserPrincipalName = "Ed@corp.howilab.local"
+                    Company = "HowiLab"
+                    Department = "Buchhaltung"
+                    Jobtitle = "Mitarbeiter"
                     Password = $DomainCreds
                     Ensure = "Present"
                     DependsOn = "[xADOrganizationalUnit]UsersOU"
@@ -395,6 +422,9 @@ configuration CreateADPDC
                     SurName = "Melte-Werke"
                     Displayname = "Gesa Melte-Werke"
                     UserPrincipalName = "Gesa@corp.howilab.local"
+                    Company = "HowiLab"
+                    Department = "Buchhaltung"
+                    Jobtitle = "Leitung"
                     Password = $DomainCreds
                     Ensure = "Present"
                     DependsOn = "[xADOrganizationalUnit]UsersOU"
@@ -412,6 +442,9 @@ configuration CreateADPDC
                     SurName = "Ellmann"
                     Displayname = "Heinz Ellmann"
                     UserPrincipalName = "Heinz@corp.howilab.local"
+                    Company = "HowiLab"
+                    Department = "Management"
+                    Jobtitle = "Mitarbeiter"
                     Password = $DomainCreds
                     Ensure = "Present"
                     DependsOn = "[xADOrganizationalUnit]UsersOU"
@@ -429,6 +462,9 @@ configuration CreateADPDC
                     SurName = "Pott"
                     Displayname = "Jack Pott"
                     UserPrincipalName = "Jack@corp.howilab.local"
+                    Company = "HowiLab"
+                    Department = "Management"
+                    Jobtitle = "Leitung"
                     Password = $DomainCreds
                     Ensure = "Present"
                     DependsOn = "[xADOrganizationalUnit]UsersOU"

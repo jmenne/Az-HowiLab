@@ -1,6 +1,6 @@
 ﻿# Provide parameter values
 $resourceGroup = "Howilab-RG"
-$location = "eastus"
+$location = "germanywestcentral"
 
 $configName = "HowiLab-01" # The name of the deployment, i.e. BaseConfig01. Do not use spaces or special characters other than _ or -. Used to concatenate resource names for the deployment.
 $domainName = "corp.howilab.local" # The FQDN of the new AD domain.
