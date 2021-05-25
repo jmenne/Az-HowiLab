@@ -25,26 +25,27 @@ configuration ClientConfig
         {
             ConfigurationMode = 'ApplyOnly'
             RebootNodeIfNeeded = $true
-        }     
-    }
-
-    xWaitforDisk Disk2
-    {
-         DiskNumber = 2
-         RetryIntervalSec =$RetryIntervalSec
-         RetryCount = $RetryCount
-    }
-
-    cDiskNoRestart ADDataDisk
-    {
-        DiskNumber = 2
-        DriveLetter = 'F'
-    }
-
-    Group RemoteDesktopUsers
-    {
+        }
+       
+        Group RemoteDesktopUsers
+        {
         GroupName = 'Remote Desktop Users'
         Ensure = 'Present'
         MembersToInclude = "corp\EWS"
+        }     
+    
+
+        xWaitforDisk Disk2
+        {
+         DiskNumber = 2
+         RetryIntervalSec =$RetryIntervalSec
+         RetryCount = $RetryCount
+        }
+
+        cDiskNoRestart ADDataDisk
+        {
+        DiskNumber = 2
+        DriveLetter = 'F'
+        }
     }
 }
