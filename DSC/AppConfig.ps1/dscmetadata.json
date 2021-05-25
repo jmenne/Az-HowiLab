@@ -1,1 +1,1 @@
-{"Modules":["xSmbShare","cNtfsAccessControl"]}
+{"Modules":["xSmbShare","cNtfsAccessControl","cDisk","xDisk"]}

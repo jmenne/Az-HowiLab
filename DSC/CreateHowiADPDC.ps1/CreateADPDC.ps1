@@ -544,6 +544,18 @@ configuration CreateADPDC
                   DependsOn    = "[xADOrganizationalUnit]GroupsOU"
                 }
 
+                xADGroup 'EWS'
+                {
+                  Ensure       = 'Present'
+                  GroupName    = 'EWS'
+                  Path         = "OU=Groups,OU=HowiLab,DC=corp,DC=howilab,DC=local"
+                  GroupScope   = 'Global'
+                  Category     = 'Security'
+                  Description  = "Alle User sollen sich per RDP am Client anmelden können"
+                  MembersToInclude = "Ed","Gesa","Claudia","Theo","Heinz","Jack","Lasse","Ben","Ellen","Erkan","Anna","Ansgar"
+                  DependsOn    = "[xADOrganizationalUnit]GroupsOU"
+                }
+
         xADUser FirstUser
         {
             DomainName = $DomainName

@@ -17,7 +17,7 @@ configuration AppConfig
         [String]$DomainName
     )
 
-    Import-DscResource -Module PSDesiredStateConfiguration, xSmbShare, cNtfsAccessControl
+    Import-DscResource -Module PSDesiredStateConfiguration, xSmbShare, cNtfsAccessControl, xDisk, cDisk
     
 # Apply configuration
     Node localhost
@@ -48,6 +48,19 @@ configuration AppConfig
         Name = 'Web-Mgmt-Tools'
         Ensure = 'Present'
         DependsOn = '[WindowsFeature]IIS'
+    }
+
+    xWaitforDisk Disk2
+    {
+         DiskNumber = 2
+         RetryIntervalSec =$RetryIntervalSec
+         RetryCount = $RetryCount
+    }
+
+    cDiskNoRestart ADDataDisk
+    {
+        DiskNumber = 2
+        DriveLetter = 'F'
     }
 
     # Create folder
