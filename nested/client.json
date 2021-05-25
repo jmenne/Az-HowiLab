@@ -92,6 +92,33 @@
     },
     {
       "type": "Microsoft.Compute/virtualMachines/extensions",
+      "name": "[concat(parameters('vmName'),'/ClientConfig')]",
+      "apiVersion": "2017-03-30",
+      "location": "[parameters('SharedVmConfig').location]",
+      "dependsOn": [
+        "[parameters('vmName')]",
+        "[concat('Microsoft.Compute/virtualMachines/',parameters('vmName'),'/extensions/JoinDomain')]"
+      ],
+      "properties": {
+        "publisher": "Microsoft.Powershell",
+        "type": "DSC",
+        "typeHandlerVersion": "2.9",
+        "autoUpgradeMinorVersion": true,
+        "protectedSettings": {
+          "Items": {}
+        },
+        "settings": {
+          "modulesUrl": "[concat(parameters('modulesURL'),'/ClientConfig.ps1.zip')]",
+          "wmfVersion": "latest",
+          "configurationFunction": "[parameters('configurationFunction').ClientConfig]",
+          "Properties": {
+            "DomainName": "[parameters('SharedVmConfig').domainName]"
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines/extensions",
       "name": "[concat(parameters('vmName'),'/BGInfo')]",
       "apiVersion": "2017-03-30",
       "scale": null,
