@@ -10,6 +10,12 @@
     },
     "nicName": {
       "type": "string"
+    },
+    "modulesURL": {
+      "type": "string"
+    },
+    "configurationFunction": {
+      "type": "object"
     }
   },
   "variables": {

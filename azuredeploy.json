@@ -101,6 +101,9 @@
       "appPublicIpName": "[concat(parameters('configName'),'-APP_IP')]",
 
       "cliVmName": "CLIENT01",
+      "cliConfigurationFunction": {
+        "ClientConfig": "ClientConfig.ps1\\ClientConfig"
+      },
       "clientNicIP": "10.0.0.50",
       "cliPublicIpName": "[concat(parameters('configName'),'-CLI_IP')]",
 
@@ -403,6 +406,12 @@
           },
           "nicName": {
             "value": "[concat(parameters('configName'),'-CLI_NIC')]"
+          },
+           "modulesURL": {
+            "value": "[variables('assetLocation')]"
+          },
+          "configurationFunction": {
+            "value": "[variables('VMs').cliConfigurationFunction]"
           }
         }
       }
