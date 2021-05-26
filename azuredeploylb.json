@@ -80,9 +80,9 @@
     
     "LoadBalancer": {
     "lbName": "[concat(parameters('configName'),'-lb')]",
-    "lbpip": "[concat(variables('LoadBalancer').lbName,'-pip')]",
-    "lbfrontend": "[concat(variables('LoadBalancer').lbName,'-fe')]",
-    "lbbepool": "[concat(variables('LoadBalancer').lbName,'-be')]"
+    "lbpip": "[concat(parameters('configName'),'-lb','-pip')]",
+    "lbfrontend": "[concat(parameters('configName'),'-lb','-fe')]",
+    "lbbepool": "[concat(parameters('configName'),'-lb','-be')]"
     },
 
     "network": {
