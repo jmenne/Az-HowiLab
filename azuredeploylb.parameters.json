@@ -1,0 +1,33 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "configName": {
+      "value": "HowiLab-01"
+    },
+    "domainName": {
+      "value": "corp.howilab.local"
+    },
+    "serverOS": {
+      "value": "Windows Server 2019"
+    },
+    "clientOS": {
+      "value": "Windows 10"
+    },
+    "adminUsername": {
+      "value": ""
+    },
+    "adminPassword": {
+      "value": ""
+    },
+    "vmSize": {
+      "value": "Standard_D2s_v3"
+    },
+    "dnsLabelPrefix": {
+      "value": "howilab"
+    },
+    "_artifactsLocation": {
+      "value": "https://raw.githubusercontent.com/jmenne/Az-Howilab/main"
+    }
+  }
+}

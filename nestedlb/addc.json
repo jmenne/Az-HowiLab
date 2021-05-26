@@ -1,0 +1,129 @@
+﻿{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "SharedVmConfig": {
+      "type": "object"
+    },
+    "vmName": {
+      "type": "string"
+    },
+    "nicName": {
+      "type": "string"
+    },
+    "avSetName": {
+      "type": "string"
+    },
+    "modulesURL": {
+      "type": "string"
+    },
+    "configurationFunction": {
+      "type": "object"
+    }
+  },
+  "variables": {
+    "firstExtensionSuffix": "/InstallDomainController",
+    "firstExtensionName": "[concat(parameters('vmName'),variables('firstExtensionSuffix'))]"
+  },
+  "resources": [
+    {
+      "apiVersion": "2019-07-01",
+      "type": "Microsoft.Compute/virtualMachines",
+      "name": "[parameters('vmName')]",
+      "location": "[parameters('SharedVmConfig').location]",
+      "properties": {
+        "availabilitySet": {
+          "id": "[resourceId('Microsoft.Compute/availabilitySets', parameters('avSetName'))]"
+        },
+        "hardwareProfile": {
+          "vmSize": "[parameters('SharedVmConfig').vmSize]"
+        },
+        "osProfile": {
+          "computerName": "[parameters('vmName')]",
+          "adminUsername": "[parameters('SharedVmConfig').adminUsername]",
+          "adminPassword": "[parameters('SharedVmConfig').adminPassword]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "MicrosoftWindowsServer",
+            "offer": "WindowsServer",
+            "sku": "[parameters('SharedVmConfig').serverOS]",
+            "version": "latest"
+          },
+          "osDisk": {
+            "createOption": "FromImage"
+          },
+          "dataDisks": [
+            {
+              "createOption": "Empty",
+              "diskSizeGB": 31,
+              "lun": 0,
+              "managedDisk": {
+                "storageAccountType": "Premium_LRS"
+              }
+            }
+          ]
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',parameters('nicName'))]"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "name": "[variables('firstExtensionName')]",
+      "apiVersion": "2017-03-30",
+      "location": "[parameters('SharedVmConfig').location]",
+      "dependsOn": [
+        "[parameters('vmName')]"
+      ],
+      "properties": {
+        "publisher": "Microsoft.Powershell",
+        "type": "DSC",
+        "typeHandlerVersion": "2.9",
+        "autoUpgradeMinorVersion": true,
+        "protectedSettings": {
+          "Items": {
+            "AdminPassword": "[parameters('SharedVmConfig').adminPassword]"
+          }
+        },
+        "settings": {
+          "modulesUrl": "[concat(parameters('modulesURL'),'/CreateHowiADPDC.ps1.zip')]",
+          "wmfVersion": "latest",
+          "configurationFunction": "[parameters('configurationFunction').CreateADPDC]",
+          "Properties": {
+            "DomainName": "[parameters('SharedVmConfig').domainName]",
+            "AdminCreds": {
+              "UserName": "[parameters('SharedVmConfig').adminUserName]",
+              "Password": "PrivateSettingsRef:AdminPassword"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "name": "[concat(parameters('vmName'),'/BGInfo')]",
+      "apiVersion": "2017-03-30",
+      "scale": null,
+      "location": "[parameters('SharedVmConfig').location]",
+      "dependsOn": [
+        "[parameters('vmName')]",
+        "[concat('Microsoft.Compute/virtualMachines/',parameters('vmName'),'/extensions/InstallDomainController')]"
+      ],
+      "properties": {
+        "publisher": "Microsoft.Compute",
+        "type": "BGInfo",
+        "typeHandlerVersion": "2.1",
+        "autoUpgradeMinorVersion": true,
+        "settings": {
+          "properties": []
+        }
+      }
+    }
+  ]
+}
