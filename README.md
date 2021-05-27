@@ -36,4 +36,5 @@ Die Konfiguration erfolgt durch die Desired State Configuration (DSC) Erweiterun
 Im Ordner *scripts* befindet sich das Powershell Skript *Deploy.ps1*, welches zunächst heruntergeladen werden sollte. Die Variablen darin lassen sich an die eigenen Bedürfnisse anpassen. Dann benötigt man natürlich eine Azure Subscription, um die Umgebung bereitzustellen.
 
 Wer es lieber mit dem Azure Portal versuchen will klickt hier:
-[Testlab](https://github.com/jmenne/Az-Howilab) [<img src="http://azuredeploy.net/deploybutton.png">](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fjmenne%2FAz-HowiLab%2Fmain%2Fazuredeploy.json)
+
+[<img src="http://azuredeploy.net/deploybutton.png">](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fjmenne%2FAz-HowiLab%2Fmain%2Fazuredeploy.json)
