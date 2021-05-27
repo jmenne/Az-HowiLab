@@ -75,8 +75,17 @@
     "shortDomainName": "[first(split(parameters('domainName'),'.'))]",
     "domainUserName": "[concat(variables('shortDomainName'),'\\',parameters('adminUsername'))]",
     "assetLocation": "[concat(parameters('_artifactsLocation'),'/DSC')]",
-    "templates": "[concat(parameters('_artifactsLocation'),'/nested')]",
+    "templates": "[concat(parameters('_artifactsLocation'),'/nestedlb')]",
+    "avSetName": "[concat(parameters('configName'),'-avSet')]",
     
+    "LoadBalancer": {
+    "lbName": "[concat(parameters('configName'),'-lb')]",
+    "lbpip": "[concat(parameters('configName'),'-lb','-pip')]",
+    "lbfrontend": "[concat(parameters('configName'),'-lb','-fe')]",
+    "lbbepool": "[concat(parameters('configName'),'-lb','-be')]"
+    },
+    "lbID": "[resourceId('Microsoft.Network/loadBalancers', variables('LoadBalancer').lbName)]",
+
     "network": {
       "vnetName": "[concat(parameters('configName'),'-VNET')]",
       "subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets', concat(parameters('configName'),'-VNET'), 'subnet-01')]",
@@ -184,50 +193,109 @@
       }
     },
     {
-      "apiVersion": "2019-11-01",
-      "type": "Microsoft.Network/publicIPAddresses",
-      "name": "[variables('VMs').adPublicIpName]",
+      "name": "[variables('avSetName')]",
+      "type": "Microsoft.Compute/availabilitySets",
+      "apiVersion": "2019-07-01",
       "location": "[resourceGroup().location]",
-      "comments": "This is the public IP address for the ADDC VM.",
       "properties": {
-        "publicIPAllocationMethod": "Static",
-        "dnsSettings": {
-          "domainNameLabel": "[toLower(concat(parameters('dnsLabelPrefix'),'ad'))]"
-        }
+        "platformFaultDomainCount": 2,
+        "platformUpdateDomainCount": 5
+      },
+      "sku": {
+        "name": "Aligned"
       }
     },
     {
-      "apiVersion": "2019-11-01",
+      "name": "[variables('LoadBalancer').lbpip]",
       "type": "Microsoft.Network/publicIPAddresses",
-      "name": "[variables('VMs').appPublicIpName]",
+      "apiVersion": "2019-11-01",
       "location": "[resourceGroup().location]",
-      "comments": "This is the public IP address for the app server VM.",
+      "comments": "This is the public IP address for the Basic Loadbalancer",
       "properties": {
-        "publicIPAllocationMethod": "Static",
+        "publicIPAllocationMethod": "Dynamic",
         "dnsSettings": {
-          "domainNameLabel": "[toLower(concat(parameters('dnsLabelPrefix'),'app'))]"
+          "domainNameLabel": "[toLower(concat(parameters('dnsLabelPrefix'),'lb'))]"
         }
+      },
+      "sku": {
+        "name": "Basic"
       }
     },
     {
+      "name": "[variables('LoadBalancer').lbName]",
+      "type": "Microsoft.Network/loadBalancers",
       "apiVersion": "2019-11-01",
-      "type": "Microsoft.Network/publicIPAddresses",
-      "name": "[variables('VMs').cliPublicIpName]",
       "location": "[resourceGroup().location]",
-      "comments": "This is the public IP address for the client VM.",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/publicIPAddresses', variables('LoadBalancer').lbpip)]"
+      ],
+      "sku": {
+        "name": "Basic"
+      },
       "properties": {
-        "publicIPAllocationMethod": "Static",
-        "dnsSettings": {
-          "domainNameLabel": "[toLower(concat(parameters('dnsLabelPrefix'),'cli'))]"
-        }
+        "frontendIPConfigurations": [
+          {
+            "name": "[variables('LoadBalancer').lbfrontend]",
+            "properties": {
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('LoadBalancer').lbpip)]"
+              }
+            }
+          }
+        ],
+        "backendAddressPools": [
+          {
+            "name": "[variables('LoadBalancer').lbbepool]"
+          }
+        ],
+        "inboundNatRules": [
+          {
+            "name": "RDP-DC01",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('LoadBalancer').lbName), concat('/frontendIPConfigurations/', variables('LoadBalancer').lbfrontend))]"
+              },
+              "protocol": "tcp",
+              "frontendPort": 43891,
+              "backendPort": 3389,
+              "enableFloatingIP": false
+            }
+          },
+          {
+            "name": "RDP-App01",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('LoadBalancer').lbName), concat('/frontendIPConfigurations/', variables('LoadBalancer').lbfrontend))]"
+              },
+              "protocol": "tcp",
+              "frontendPort": 43892,
+              "backendPort": 3389,
+              "enableFloatingIP": false
+            }
+          },
+          {
+            "name": "RDP-Client01",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('LoadBalancer').lbName), concat('/frontendIPConfigurations/', variables('LoadBalancer').lbfrontend))]"
+              },
+              "protocol": "tcp",
+              "frontendPort": 43893,
+              "backendPort": 3389,
+              "enableFloatingIP": false
+            }
+          }
+        ]
       }
     },
+
     {
       "name": "[concat(parameters('configName'),'-AD_NIC')]",
       "type": "Microsoft.Network/networkInterfaces",
       "location": "[resourceGroup().location]",
       "dependsOn": [
-        "[concat('Microsoft.Network/virtualNetworks/',parameters('configName'),'-vnet')]"
+        "[concat('Microsoft.Network/virtualNetworks/',parameters('configName'),'-vnet')]",
+        "[concat('Microsoft.Network/loadBalancers/', variables('LoadBalancer').lbName)]"
       ],
       "apiVersion": "2018-01-01",
       "comments": "This is the network interface for the ADDC VM.",
@@ -238,12 +306,19 @@
             "properties": {
               "privateIPAllocationMethod": "Static",
               "privateIPAddress": "[variables('VMs').adNicIP]",
-              "publicIPAddress": {
-                "id": "[resourceId ('Microsoft.Network/publicIPAddresses/',variables('VMs').adPublicIpName)]"
-              },
               "subnet": {
                 "id": "[variables('network').subnetRef]"
-              }
+              },
+              "loadBalancerBackendAddressPools": [
+                {
+                  "id": "[concat(resourceId('Microsoft.Network/loadBalancers/', variables('LoadBalancer').lbName), '/backendAddressPools/', variables('LoadBalancer').lbbepool)]"
+                } 
+              ],
+              "loadBalancerInboundNatRules": [
+                {
+                "id":"[concat(resourceId('Microsoft.Network/loadBalancers/', variables('LoadBalancer').lbName), '/inboundNatRules/RDP-DC01')]"
+                }
+              ]
             }
           }
         ]
@@ -254,7 +329,8 @@
       "type": "Microsoft.Network/networkInterfaces",
       "location": "[resourceGroup().location]",
       "dependsOn": [
-        "[concat('Microsoft.Network/virtualNetworks/',parameters('configName'),'-vnet')]"
+        "[concat('Microsoft.Network/virtualNetworks/',parameters('configName'),'-vnet')]",
+        "[concat('Microsoft.Network/loadBalancers/', variables('LoadBalancer').lbName)]"
       ],
       "apiVersion": "2018-01-01",
       "comments": "This is the network interface for the app server VM.",
@@ -265,12 +341,19 @@
             "properties": {
               "privateIPAllocationMethod": "Static",
               "privateIPAddress": "[variables('VMs').appNicIP]",
-              "publicIPAddress": {
-                "id": "[resourceId ('Microsoft.Network/publicIPAddresses/',variables('VMs').appPublicIpName)]"
-              },
               "subnet": {
                 "id": "[variables('network').subnetRef]"
-              }
+              },
+              "loadBalancerBackendAddressPools": [
+                {
+                  "id": "[concat(resourceId('Microsoft.Network/loadBalancers/', variables('LoadBalancer').lbName), '/backendAddressPools/', variables('LoadBalancer').lbbepool)]"
+                } 
+              ],
+               "loadBalancerInboundNatRules": [
+                {
+                "id":"[concat(resourceId('Microsoft.Network/loadBalancers/', variables('LoadBalancer').lbName), '/inboundNatRules/RDP-App01')]"
+                }
+              ]
             }
           }
         ],
@@ -287,7 +370,8 @@
       "type": "Microsoft.Network/networkInterfaces",
       "location": "[resourceGroup().location]",
       "dependsOn": [
-        "[concat('Microsoft.Network/virtualNetworks/',parameters('configName'),'-vnet')]"
+        "[concat('Microsoft.Network/virtualNetworks/',parameters('configName'),'-vnet')]",
+        "[concat('Microsoft.Network/loadBalancers/', variables('LoadBalancer').lbName)]"
       ],
       "apiVersion": "2018-01-01",
       "comments": "This is the network interface for the client VM.",
@@ -298,12 +382,19 @@
             "properties": {
               "privateIPAllocationMethod": "Static",
               "privateIPAddress": "[variables('VMs').clientNicIP]",
-              "publicIPAddress": {
-                "id": "[resourceId ('Microsoft.Network/publicIPAddresses/',variables('VMs').cliPublicIpName)]"
-              },
               "subnet": {
                 "id": "[variables('network').subnetRef]"
-              }
+              },
+              "loadBalancerBackendAddressPools": [
+                {
+                  "id": "[concat(resourceId('Microsoft.Network/loadBalancers/', variables('LoadBalancer').lbName), '/backendAddressPools/', variables('LoadBalancer').lbbepool)]"
+                } 
+              ],
+               "loadBalancerInboundNatRules": [
+                {
+                "id":"[concat(resourceId('Microsoft.Network/loadBalancers/', variables('LoadBalancer').lbName), '/inboundNatRules/RDP-Client01')]"
+                }
+              ]
             }
           }
         ],
@@ -339,6 +430,9 @@
           "nicName": {
             "value": "[concat(parameters('configName'),'-AD_NIC')]"
           },
+          "avSetName": {
+            "value": "[variables('avSetName')]"
+          },
           "modulesURL": {
             "value": "[variables('assetLocation')]"
           },
@@ -372,6 +466,9 @@
           },
           "nicName": {
             "value": "[concat(parameters('configName'),'-APP_NIC')]"
+          },
+          "avSetName": {
+            "value": "[variables('avSetName')]"
           },
           "modulesURL": {
             "value": "[variables('assetLocation')]"
@@ -407,6 +504,9 @@
           "nicName": {
             "value": "[concat(parameters('configName'),'-CLI_NIC')]"
           },
+          "avSetName": {
+            "value": "[variables('avSetName')]"
+          },
            "modulesURL": {
             "value": "[variables('assetLocation')]"
           },
@@ -418,30 +518,5 @@
     }
   ],
 
-  "outputs": {
-    "DcPublicIpAddress": {
-      "type": "string",
-      "value": "[reference(variables('VMs').adPublicIpName).ipAddress]"
-    },
-    "DcFqdn": {
-      "type": "string",
-      "value": "[reference(variables('VMs').adPublicIpName).dnsSettings.fqdn]"
-    },
-    "AppPublicIpAddress": {
-      "type": "string",
-      "value": "[reference(variables('VMs').appPublicIpName).ipAddress]"
-    },
-    "AppFqdn": {
-      "type": "string",
-      "value": "[reference(variables('VMs').appPublicIpName).dnsSettings.fqdn]"
-    },
-    "ClientPublicIpAddress": {
-      "type": "string",
-      "value": "[reference(variables('VMs').cliPublicIpName).ipAddress]"
-    },
-    "ClientFqdn": {
-      "type": "string",
-      "value": "[reference(variables('VMs').cliPublicIpName).dnsSettings.fqdn]"
-    }
-  }
+  "outputs": {}
 }
