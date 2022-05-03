@@ -19,7 +19,7 @@
     "serverOS": {
       "type": "string",
       "allowedValues": [
-        "Windows Server 2019", "Windows Server 2016"
+        "Windows Server 2022", "Windows Server 2019", "Windows Server 2016"
       ],
       "metadata": {
         "description": "The OS of application servers in your deployment."
@@ -116,8 +116,8 @@
       "clientNicIP": "10.0.0.50",
       "cliPublicIpName": "[concat(parameters('configName'),'-CLI_IP')]",
 
-      "clientOS": "[if(equals(parameters('clientOS'),'Windows Server 2019'),'2019-Datacenter-smalldisk','20h2-pro')]",
-      "serverOS": "[if(equals(parameters('serverOS'),'Windows Server 2019'),'2019-Datacenter-smalldisk','2016-Datacenter-smalldisk')]"
+      "clientOS": "[if(equals(parameters('clientOS'),'Windows Server 2019'),'2019-Datacenter-smalldisk','win10-21h2-pro')]",
+      "serverOS": "[if(equals(parameters('serverOS'),'Windows Server 2019'),'2019-Datacenter-smalldisk',if(equals(parameters('serverOS'),'Windows Server 2022'),'2022-datacenter-smalldisk','2016-Datacenter-smalldisk'))]"
     },
 
     "SharedVmConfig": {
