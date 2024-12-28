@@ -11,9 +11,6 @@
     "nicName": {
       "type": "string"
     },
-    "avSetName": {
-      "type": "string"
-    },
     "modulesURL": {
       "type": "string"
     },
@@ -33,9 +30,6 @@
       "location": "[parameters('SharedVmConfig').location]",
       "dependsOn": [],
       "properties": {
-        "availabilitySet": {
-          "id": "[resourceId('Microsoft.Compute/availabilitySets', parameters('avSetName'))]"
-        },
         "hardwareProfile": {
           "vmSize": "[parameters('SharedVmConfig').vmSize]"
         },
@@ -89,7 +83,7 @@
         "autoUpgradeMinorVersion": true,
         "settings": {
           "Name": "[parameters('SharedVmConfig').domainName]",
-          "OUPath": "OU=Clients,OU=HowiLab,dc=corp,dc=howilab,dc=local",
+          "OUPath": "OU=Clients,OU=HowiLab,dc=corp,dc=howilab,dc=internal",
           "Options": "3",
           "Restart": "true",
           "User": "[parameters('SharedVmConfig').domainUserName]"

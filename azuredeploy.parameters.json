@@ -6,13 +6,13 @@
       "value": "HowiLab-01"
     },
     "domainName": {
-      "value": "corp.howilab.local"
+      "value": "corp.howilab.internal"
     },
     "serverOS": {
       "value": "Windows Server 2019"
     },
     "clientOS": {
-      "value": "Windows 10"
+      "value": "Windows 11"
     },
     "adminUsername": {
       "value": ""

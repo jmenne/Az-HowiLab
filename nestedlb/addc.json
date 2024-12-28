@@ -11,9 +11,6 @@
     "nicName": {
       "type": "string"
     },
-    "avSetName": {
-      "type": "string"
-    },
     "modulesURL": {
       "type": "string"
     },
@@ -32,9 +29,6 @@
       "name": "[parameters('vmName')]",
       "location": "[parameters('SharedVmConfig').location]",
       "properties": {
-        "availabilitySet": {
-          "id": "[resourceId('Microsoft.Compute/availabilitySets', parameters('avSetName'))]"
-        },
         "hardwareProfile": {
           "vmSize": "[parameters('SharedVmConfig').vmSize]"
         },

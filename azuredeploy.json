@@ -14,7 +14,7 @@
       "metadata": {
         "description": "The FQDN of the new AD domain. For this TLG, use testlab.<your public domain>."
       },
-      "defaultValue": "corp.howilab.local"
+      "defaultValue": "corp.howilab.internal"
     },
     "serverOS": {
       "type": "string",
@@ -29,12 +29,12 @@
     "clientOS": {
       "type": "string",
       "allowedValues": [
-        "Windows Server 2019", "Windows 10"
+        "Windows Server 2019", "Windows 11"
       ],
       "metadata": {
-        "description": "The OS of client VMs in your deployment. You can choose Windows 10 ONLY if your Azure subscription supports Windows 10 gallery images."
+        "description": "The OS of client VMs in your deployment. You can choose Windows 11 ONLY if your Azure subscription supports Windows 11 gallery images."
       },
-      "defaultValue": "Windows 10"
+      "defaultValue": "Windows 11"
     },
     "adminUsername": {
       "type": "string",
@@ -76,7 +76,6 @@
     "domainUserName": "[concat(variables('shortDomainName'),'\\',parameters('adminUsername'))]",
     "assetLocation": "[concat(parameters('_artifactsLocation'),'/DSC')]",
     "templates": "[concat(parameters('_artifactsLocation'),'/nestedlb')]",
-    "avSetName": "[concat(parameters('configName'),'-avSet')]",
     
     "LoadBalancer": {
     "lbName": "[concat(parameters('configName'),'-lb')]",
@@ -116,7 +115,7 @@
       "clientNicIP": "10.0.0.50",
       "cliPublicIpName": "[concat(parameters('configName'),'-CLI_IP')]",
 
-      "clientOS": "[if(equals(parameters('clientOS'),'Windows Server 2019'),'2019-Datacenter-smalldisk','win10-21h2-pro')]",
+      "clientOS": "[if(equals(parameters('clientOS'),'Windows Server 2019'),'2019-Datacenter-smalldisk','win11-23h2-pro')]",
       "serverOS": "[if(equals(parameters('serverOS'),'Windows Server 2019'),'2019-Datacenter-smalldisk',if(equals(parameters('serverOS'),'Windows Server 2022'),'2022-datacenter-smalldisk','2016-Datacenter-smalldisk'))]"
     },
 
@@ -193,44 +192,32 @@
       }
     },
     {
-      "name": "[variables('avSetName')]",
-      "type": "Microsoft.Compute/availabilitySets",
-      "apiVersion": "2019-07-01",
-      "location": "[resourceGroup().location]",
-      "properties": {
-        "platformFaultDomainCount": 2,
-        "platformUpdateDomainCount": 5
-      },
-      "sku": {
-        "name": "Aligned"
-      }
-    },
-    {
       "name": "[variables('LoadBalancer').lbpip]",
       "type": "Microsoft.Network/publicIPAddresses",
-      "apiVersion": "2019-11-01",
+      "apiVersion": "2021-08-01",
       "location": "[resourceGroup().location]",
       "comments": "This is the public IP address for the Basic Loadbalancer",
       "properties": {
-        "publicIPAllocationMethod": "Dynamic",
+        "publicIPAllocationMethod": "Static",
+        "publicIPAddressVersion": "IPv4",
         "dnsSettings": {
           "domainNameLabel": "[toLower(concat(parameters('dnsLabelPrefix'),'lb'))]"
         }
       },
       "sku": {
-        "name": "Basic"
+        "name": "Standard"
       }
     },
     {
       "name": "[variables('LoadBalancer').lbName]",
       "type": "Microsoft.Network/loadBalancers",
-      "apiVersion": "2019-11-01",
+      "apiVersion": "2021-08-01",
       "location": "[resourceGroup().location]",
       "dependsOn": [
         "[resourceId('Microsoft.Network/publicIPAddresses', variables('LoadBalancer').lbpip)]"
       ],
       "sku": {
-        "name": "Basic"
+        "name": "Standard"
       },
       "properties": {
         "frontendIPConfigurations": [
@@ -430,9 +417,6 @@
           "nicName": {
             "value": "[concat(parameters('configName'),'-AD_NIC')]"
           },
-          "avSetName": {
-            "value": "[variables('avSetName')]"
-          },
           "modulesURL": {
             "value": "[variables('assetLocation')]"
           },
@@ -467,9 +451,6 @@
           "nicName": {
             "value": "[concat(parameters('configName'),'-APP_NIC')]"
           },
-          "avSetName": {
-            "value": "[variables('avSetName')]"
-          },
           "modulesURL": {
             "value": "[variables('assetLocation')]"
           },
@@ -503,9 +484,6 @@
           },
           "nicName": {
             "value": "[concat(parameters('configName'),'-CLI_NIC')]"
-          },
-          "avSetName": {
-            "value": "[variables('avSetName')]"
           },
            "modulesURL": {
             "value": "[variables('assetLocation')]"

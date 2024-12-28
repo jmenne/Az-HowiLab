@@ -27,7 +27,7 @@ configuration CreateADPDC
     [System.Management.Automation.PSCredential ]$DomainCreds = New-Object System.Management.Automation.PSCredential ("${DomainName}\$($Admincreds.UserName)", $Admincreds.Password)
 
 # Get network adapter
-    $Interface=Get-NetAdapter|Where Name -Like "Ethernet*"|Select-Object -First 1
+    $Interface=Get-NetAdapter|Where-Object Name -Like "Ethernet*"|Select-Object -First 1
     $InterfaceAlias=$($Interface.Name)
 
 
@@ -190,7 +190,7 @@ configuration CreateADPDC
         xADOrganizationalUnit HowiLabOU
                 {
                     Name = 'HowiLab'
-                    Path = "DC=corp,DC=howilab,dc=local"
+                    Path = "DC=corp,DC=howilab,dc=internal"
                     ProtectedFromAccidentalDeletion = $true
                     Ensure = 'Present'
                     DependsOn = "[xADDomain]FirstDS" 
@@ -199,7 +199,7 @@ configuration CreateADPDC
                 xADOrganizationalUnit ClientsOU
                 {
                     Name = 'Clients'
-                    Path = "OU=howilab,DC=corp,DC=howilab,dc=local"
+                    Path = "OU=howilab,DC=corp,DC=howilab,dc=internal"
                     ProtectedFromAccidentalDeletion = $true
                     Ensure = 'Present'
                     DependsOn = "[xADOrganizationalUnit]HowiLabOU" 
@@ -208,7 +208,7 @@ configuration CreateADPDC
                 xADOrganizationalUnit ServersOU
                 {
                     Name = 'Servers'
-                    Path = "OU=howilab,DC=corp,DC=howilab,dc=local"
+                    Path = "OU=howilab,DC=corp,DC=howilab,dc=internal"
                     ProtectedFromAccidentalDeletion = $true
                     Ensure = 'Present'
                     DependsOn = "[xADOrganizationalUnit]HowiLabOU" 
@@ -217,7 +217,7 @@ configuration CreateADPDC
                  xADOrganizationalUnit GroupsOU
                 {
                     Name = 'Groups'
-                    Path = "OU=howilab,DC=corp,DC=howilab,dc=local"
+                    Path = "OU=howilab,DC=corp,DC=howilab,dc=internal"
                     ProtectedFromAccidentalDeletion = $true
                     Ensure = 'Present'
                     DependsOn = "[xADOrganizationalUnit]HowiLabOU" 
@@ -226,7 +226,7 @@ configuration CreateADPDC
                 xADOrganizationalUnit UsersOU
                 {
                     Name = 'Users'
-                    Path = "OU=howilab,DC=corp,DC=howilab,dc=local"
+                    Path = "OU=howilab,DC=corp,DC=howilab,dc=internal"
                     ProtectedFromAccidentalDeletion = $true
                     Ensure = 'Present'
                     DependsOn = "[xADOrganizationalUnit]HowiLabOU" 
@@ -241,14 +241,14 @@ configuration CreateADPDC
                     GivenName = "Anna"
                     SurName = "Bolika"
                     Displayname = "Anna Bolika"
-                    UserPrincipalName = "Anna@corp.howilab.local"
+                    UserPrincipalName = "Anna@corp.howilab.internal"
                     Company = "HowiLab"
                     Department = "Forschung"
                     Jobtitle ="Leitung"
                     Password = $DomainCreds
                     Ensure = "Present"
                     DependsOn = "[xADOrganizationalUnit]UsersOU"
-                    Path = "OU=Users,OU=HowiLab,DC=corp,DC=howilab,DC=local"
+                    Path = "OU=Users,OU=HowiLab,DC=corp,DC=howilab,dc=internal"
                     PasswordNeverExpires = $true
                 }
 
@@ -261,14 +261,14 @@ configuration CreateADPDC
                     GivenName = "Ellen"
                     SurName = "Bogen"
                     Displayname = "Ellen Bogen"
-                    UserPrincipalName = "Ellen@corp.howilab.local"
+                    UserPrincipalName = "Ellen@corp.howilab.internal"
                     Company = "HowiLab"
                     Department = "IT"
                     Jobtitle = "Leitung"
                     Password = $DomainCreds
                     Ensure = "Present"
                     DependsOn = "[xADOrganizationalUnit]UsersOU"
-                    Path = "OU=Users,OU=HowiLab,DC=corp,DC=howilab,DC=local"
+                    Path = "OU=Users,OU=HowiLab,DC=corp,DC=howilab,dc=internal"
                     PasswordNeverExpires = $true
                 }
 
@@ -281,14 +281,14 @@ configuration CreateADPDC
                     GivenName = "Ansgar"
                     SurName = "Ragentor"
                     Displayname = "Ansgar Ragentor"
-                    UserPrincipalName = "Ansgar@corp.howilab.local"
+                    UserPrincipalName = "Ansgar@corp.howilab.internal"
                     Company = "HowiLab"
                     Department = "Forschung"
                     Jobtitle = "Mitarbeiter"
                     Password = $DomainCreds
                     Ensure = "Present"
                     DependsOn = "[xADOrganizationalUnit]UsersOU"
-                    Path = "OU=Users,OU=HowiLab,DC=corp,DC=howilab,DC=local"
+                    Path = "OU=Users,OU=HowiLab,DC=corp,DC=howilab,dc=internal"
                     PasswordNeverExpires = $true
                 }
 
@@ -301,14 +301,14 @@ configuration CreateADPDC
                     GivenName = "Erkan"
                     SurName = "Nichtanders"
                     Displayname = "Erkan Nichtanders"
-                    UserPrincipalName = "Erkan@corp.howilab.local"
+                    UserPrincipalName = "Erkan@corp.howilab.internal"
                     Company = "HowiLab"
                     Department = "IT"
                     Jobtitle = "Mitarbeiter"
                     Password = $DomainCreds
                     Ensure = "Present"
                     DependsOn = "[xADOrganizationalUnit]UsersOU"
-                    Path = "OU=Users,OU=HowiLab,DC=corp,DC=howilab,DC=local"
+                    Path = "OU=Users,OU=HowiLab,DC=corp,DC=howilab,dc=internal"
                     PasswordNeverExpires = $true
                  }
 
@@ -321,14 +321,14 @@ configuration CreateADPDC
                     GivenName = "Ben"
                     SurName = "Utzer"
                     Displayname = "Ben Utzer"
-                    UserPrincipalName = "Ben@corp.howilab.local"
+                    UserPrincipalName = "Ben@corp.howilab.internal"
                     Company = "HowiLab"
                     Department = "HelpDesk"
                     Jobtitle = "Mitarbeiter"
                     Password = $DomainCreds
                     Ensure = "Present"
                     DependsOn = "[xADOrganizationalUnit]UsersOU"
-                    Path = "OU=Users,OU=HowiLab,DC=corp,DC=howilab,DC=local"
+                    Path = "OU=Users,OU=HowiLab,DC=corp,DC=howilab,dc=internal"
                     PasswordNeverExpires = $true
                  }
 
@@ -341,14 +341,14 @@ configuration CreateADPDC
                     GivenName = "Lasse"
                     SurName = "Reden"
                     Displayname = "Lasse Reden"
-                    UserPrincipalName = "Lasse@corp.howilab.local"
+                    UserPrincipalName = "Lasse@corp.howilab.internal"
                     Company = "HowiLab"
                     Department = "HelpDesk"
                     Jobtitle = "Leitung"
                     Password = $DomainCreds
                     Ensure = "Present"
                     DependsOn = "[xADOrganizationalUnit]UsersOU"
-                    Path = "OU=Users,OU=HowiLab,DC=corp,DC=howilab,DC=local"
+                    Path = "OU=Users,OU=HowiLab,DC=corp,DC=howilab,dc=internal"
                     PasswordNeverExpires = $true
                  }
 
@@ -361,14 +361,14 @@ configuration CreateADPDC
                     GivenName = "Claudia"
                     SurName = "Reden"
                     Displayname = "Claudia Manten"
-                    UserPrincipalName = "Claudia@corp.howilab.local"
+                    UserPrincipalName = "Claudia@corp.howilab.internal"
                     Company = "HowiLab"
                     Department = "Vertrieb"
                     Jobtitle = "Leitung"
                     Password = $DomainCreds
                     Ensure = "Present"
                     DependsOn = "[xADOrganizationalUnit]UsersOU"
-                    Path = "OU=Users,OU=HowiLab,DC=corp,DC=howilab,DC=local"
+                    Path = "OU=Users,OU=HowiLab,DC=corp,DC=howilab,dc=internal"
                     PasswordNeverExpires = $true
                  }
 
@@ -381,14 +381,14 @@ configuration CreateADPDC
                     GivenName = "Theo"
                     SurName = "Retisch"
                     Displayname = "Theo Retisch"
-                    UserPrincipalName = "Theo@corp.howilab.local"
+                    UserPrincipalName = "Theo@corp.howilab.internal"
                     Company = "HowiLab"
                     Department = "Vertrieb"
                     Jobtitle = "Mitarbeiter"
                     Password = $DomainCreds
                     Ensure = "Present"
                     DependsOn = "[xADOrganizationalUnit]UsersOU"
-                    Path = "OU=Users,OU=HowiLab,DC=corp,DC=howilab,DC=local"
+                    Path = "OU=Users,OU=HowiLab,DC=corp,DC=howilab,dc=internal"
                     PasswordNeverExpires = $true
                  }   
 
@@ -401,14 +401,14 @@ configuration CreateADPDC
                     GivenName = "Ed"
                     SurName = "Was"
                     Displayname = "Ed Was"
-                    UserPrincipalName = "Ed@corp.howilab.local"
+                    UserPrincipalName = "Ed@corp.howilab.internal"
                     Company = "HowiLab"
                     Department = "Buchhaltung"
                     Jobtitle = "Mitarbeiter"
                     Password = $DomainCreds
                     Ensure = "Present"
                     DependsOn = "[xADOrganizationalUnit]UsersOU"
-                    Path = "OU=Users,OU=HowiLab,DC=corp,DC=howilab,DC=local"
+                    Path = "OU=Users,OU=HowiLab,DC=corp,DC=howilab,dc=internal"
                     PasswordNeverExpires = $true
                  }
 
@@ -421,14 +421,14 @@ configuration CreateADPDC
                     GivenName = "Gesa"
                     SurName = "Melte-Werke"
                     Displayname = "Gesa Melte-Werke"
-                    UserPrincipalName = "Gesa@corp.howilab.local"
+                    UserPrincipalName = "Gesa@corp.howilab.internal"
                     Company = "HowiLab"
                     Department = "Buchhaltung"
                     Jobtitle = "Leitung"
                     Password = $DomainCreds
                     Ensure = "Present"
                     DependsOn = "[xADOrganizationalUnit]UsersOU"
-                    Path = "OU=Users,OU=HowiLab,DC=corp,DC=howilab,DC=local"
+                    Path = "OU=Users,OU=HowiLab,DC=corp,DC=howilab,dc=internal"
                     PasswordNeverExpires = $true
                  }
 
@@ -441,14 +441,14 @@ configuration CreateADPDC
                     GivenName = "Heinz"
                     SurName = "Ellmann"
                     Displayname = "Heinz Ellmann"
-                    UserPrincipalName = "Heinz@corp.howilab.local"
+                    UserPrincipalName = "Heinz@corp.howilab.internal"
                     Company = "HowiLab"
                     Department = "Management"
                     Jobtitle = "Mitarbeiter"
                     Password = $DomainCreds
                     Ensure = "Present"
                     DependsOn = "[xADOrganizationalUnit]UsersOU"
-                    Path = "OU=Users,OU=HowiLab,DC=corp,DC=howilab,DC=local"
+                    Path = "OU=Users,OU=HowiLab,DC=corp,DC=howilab,dc=internal"
                     PasswordNeverExpires = $true
                  }
 
@@ -461,14 +461,14 @@ configuration CreateADPDC
                     GivenName = "Jack"
                     SurName = "Pott"
                     Displayname = "Jack Pott"
-                    UserPrincipalName = "Jack@corp.howilab.local"
+                    UserPrincipalName = "Jack@corp.howilab.internal"
                     Company = "HowiLab"
                     Department = "Management"
                     Jobtitle = "Leitung"
                     Password = $DomainCreds
                     Ensure = "Present"
                     DependsOn = "[xADOrganizationalUnit]UsersOU"
-                    Path = "OU=Users,OU=HowiLab,DC=corp,DC=howilab,DC=local"
+                    Path = "OU=Users,OU=HowiLab,DC=corp,DC=howilab,dc=internal"
                     PasswordNeverExpires = $true
                  }
 
@@ -476,7 +476,7 @@ configuration CreateADPDC
                 {
                   Ensure       = 'Present'
                   GroupName    = 'Forschung'
-                  Path         = "OU=Groups,OU=HowiLab,DC=corp,DC=howilab,DC=local"
+                  Path         = "OU=Groups,OU=HowiLab,DC=corp,DC=howilab,dc=internal"
                   GroupScope   = 'Global'
                   Category     = 'Security'
                   Description  = "Mitarbeiter der Forschungsabteilung"
@@ -488,7 +488,7 @@ configuration CreateADPDC
                 {
                   Ensure       = 'Present'
                   GroupName    = 'IT'
-                  Path         = "OU=Groups,OU=HowiLab,DC=corp,DC=howilab,DC=local"
+                  Path         = "OU=Groups,OU=HowiLab,DC=corp,DC=howilab,dc=internal"
                   GroupScope   = 'Global'
                   Category     = 'Security'
                   Description  = "Mitarbeiter der IT-Abteilung"
@@ -500,7 +500,7 @@ configuration CreateADPDC
                 {
                   Ensure       = 'Present'
                   GroupName    = 'HelpDesk'
-                  Path         = "OU=Groups,OU=HowiLab,DC=corp,DC=howilab,DC=local"
+                  Path         = "OU=Groups,OU=HowiLab,DC=corp,DC=howilab,dc=internal"
                   GroupScope   = 'Global'
                   Category     = 'Security'
                   Description  = "Mitarbeiter der IT-Abteilung"
@@ -512,7 +512,7 @@ configuration CreateADPDC
                 {
                   Ensure       = 'Present'
                   GroupName    = 'Management'
-                  Path         = "OU=Groups,OU=HowiLab,DC=corp,DC=howilab,DC=local"
+                  Path         = "OU=Groups,OU=HowiLab,DC=corp,DC=howilab,dc=internal"
                   GroupScope   = 'Global'
                   Category     = 'Security'
                   Description  = "Mitarbeiter der IT-Abteilung"
@@ -524,7 +524,7 @@ configuration CreateADPDC
                 {
                   Ensure       = 'Present'
                   GroupName    = 'Vertrieb'
-                  Path         = "OU=Groups,OU=HowiLab,DC=corp,DC=howilab,DC=local"
+                  Path         = "OU=Groups,OU=HowiLab,DC=corp,DC=howilab,dc=internal"
                   GroupScope   = 'Global'
                   Category     = 'Security'
                   Description  = "Mitarbeiter der IT-Abteilung"
@@ -536,7 +536,7 @@ configuration CreateADPDC
                 {
                   Ensure       = 'Present'
                   GroupName    = 'Buchhaltung'
-                  Path         = "OU=Groups,OU=HowiLab,DC=corp,DC=howilab,DC=local"
+                  Path         = "OU=Groups,OU=HowiLab,DC=corp,DC=howilab,dc=internal"
                   GroupScope   = 'Global'
                   Category     = 'Security'
                   Description  = "Mitarbeiter der IT-Abteilung"
@@ -548,7 +548,7 @@ configuration CreateADPDC
                 {
                   Ensure       = 'Present'
                   GroupName    = 'EWS'
-                  Path         = "OU=Groups,OU=HowiLab,DC=corp,DC=howilab,DC=local"
+                  Path         = "OU=Groups,OU=HowiLab,DC=corp,DC=howilab,dc=internal"
                   GroupScope   = 'Global'
                   Category     = 'Security'
                   Description  = "Alle User sollen sich per RDP am Client anmelden können"
