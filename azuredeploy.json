@@ -84,6 +84,8 @@
     "lbbepool": "[concat(parameters('configName'),'-lb','-be')]"
     },
     "lbID": "[resourceId('Microsoft.Network/loadBalancers', variables('LoadBalancer').lbName)]",
+    "lbbepoolID": "[concat(variables('lbID'), '/backendAddressPools/', variables('LoadBalancer').lbbepool)]",
+    "lbfrontendID": "[concat(variables('lbID'), '/frontendIPConfigurations/', variables('LoadBalancer').lbfrontend)]",
 
     "network": {
       "vnetName": "[concat(parameters('configName'),'-VNET')]",
@@ -270,6 +272,25 @@
               "frontendPort": 43893,
               "backendPort": 3389,
               "enableFloatingIP": false
+            }
+          }
+        ],
+         "outboundRules": [
+          {
+            "name": "Internet",
+            "properties": {
+              "allocatedOutboundPorts": 0,
+              "protocol": "All",
+              "enableTcpReset": true,
+              "idleTimeoutInMinutes": 4,
+              "backendAddressPool": {
+                "id": "[variables('lbbepoolID')]"
+              },
+              "frontendIPConfigurations": [
+                {
+                  "id": "[variables('lbfrontendID')]"
+                }
+              ]
             }
           }
         ]
