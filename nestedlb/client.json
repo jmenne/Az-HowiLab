@@ -41,7 +41,7 @@
         "storageProfile": {
           "imageReference": {
             "publisher": "[if(equals(parameters('SharedVmConfig').clientOS,'2019-Datacenter'),'MicrosoftWindowsServer','MicrosoftWindowsDesktop')]",
-            "offer": "[if(equals(parameters('SharedVmConfig').clientOS,'2019-Datacenter'),'WindowsServer','Windows-11)]",
+            "offer": "[if(equals(parameters('SharedVmConfig').clientOS,'2019-Datacenter'),'WindowsServer','Windows-11')]",
             "sku": "[parameters('SharedVmConfig').clientOS]",
             "version": "latest"
           },
