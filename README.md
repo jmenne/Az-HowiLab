@@ -11,7 +11,7 @@ Microsoft hat dazu Test Lab Guides veröffentlicht. [Simulated Enterprise Base C
 ### VMs
 
 Ich wähle als Betriebssystem für die Server den Windows Server 2019 Datacenter und den Windows 11 Client 23h2. Die Machine Size für alle ist "Standard_D2s_v3" mit 2 CPU Kernen und 8 GB RAM. Aus Kostengründen nehme ich die smalldisk-Images für dir Server in Azure. Es werden Managed Disks für die OS-Disks und Data-Disks benutzt, so dass man keinen Storage Account braucht.
-Anders als bei den Originaltemplates, wo alle Maschinen eine öffentliche IP bekommen und direkt per RDP über Port 3389 erreichbar sind, erstellt mein Template eine öffentliche dynamische IP und einen Standard Load Balancer. Die VMs sind im Backend Pool des Load Balancers und per Inbound NAT rules wird der Zugriff per RDP über Custom Ports geregelt.
+Anders als bei den Originaltemplates, wo alle Maschinen eine öffentliche IP bekommen und direkt per RDP über Port 3389 erreichbar sind, erstellt mein Template eine öffentliche Standard IP und einen Standard Load Balancer. Die VMs sind im Backend Pool des Load Balancers und per Inbound NAT rules wird der Zugriff per RDP über Custom Ports geregelt.
 ![Topology](./images/Topology.png)
 
 Die Konfiguration erfolgt durch die Desired State Configuration (DSC) Erweiterung:
